@@ -1,0 +1,1830 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#08080a">
+  <title>Chifa Katzumy</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Tipografía Plus Jakarta Sans y JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Kaushan+Script&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    :root {
+      --bg-app: #f5f5f3;
+      --surface: #ffffff;
+      --border-subtle: rgba(24, 24, 27, 0.08);
+      --accent-crimson: #e11d48;
+      --accent-gold: #d97706;
+    }
+    .dark {
+      --bg-app: #08080a;
+      --surface: #121216;
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --accent-crimson: #f43f5e;
+      --accent-gold: #fbbf24;
+    }
+
+    * {
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    input, textarea {
+      user-select: text;
+      font-size: 16px !important;
+    }
+
+    body {
+      background-color: var(--bg-app);
+      font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+      overscroll-behavior-y: contain;
+    }
+
+    /* Resplandor ambiental superior sutil */
+    body::before {
+      content: "";
+      position: fixed;
+      top: -120px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120vw;
+      height: 260px;
+      background: radial-gradient(ellipse at center, rgba(225, 29, 72, 0.14) 0%, rgba(245, 158, 11, 0.05) 45%, transparent 75%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Nombre con estilo chifa: trazo de pincel + farol */
+    .chifa-name {
+      font-family: "Kaushan Script", "Brush Script MT", cursive;
+      font-size: 23px;
+      font-weight: 400;
+      line-height: 1.2;
+      letter-spacing: 0.01em;
+    }
+    .chifa-name-accent { padding: 0 0.12em 0.08em 0; }
+    .chifa-lantern { width: 15px; height: 19px; filter: drop-shadow(0 2px 5px rgba(225, 29, 72, 0.35)); }
+
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* Física táctil fluida estilo Android */
+    .spring-press {
+      transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.2s ease;
+      will-change: transform;
+    }
+    .spring-press:active {
+      transform: scale(0.94);
+    }
+
+    /* Cabecera Glassmorphism */
+    .glass-header {
+      background: rgba(245, 245, 243, 0.85);
+      backdrop-filter: blur(24px) saturate(190%);
+      -webkit-backdrop-filter: blur(24px) saturate(190%);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .dark .glass-header {
+      background: rgba(8, 8, 10, 0.82);
+    }
+
+    /* Tarjetas con elevación y profundidad */
+    .luxe-card {
+      background: var(--surface);
+      border: 1px solid var(--border-subtle);
+      box-shadow: 0 6px 24px -6px rgba(0, 0, 0, 0.06);
+    }
+    .dark .luxe-card {
+      background: linear-gradient(180deg, rgba(24, 24, 31, 0.94) 0%, rgba(14, 14, 18, 0.98) 100%);
+      box-shadow: 0 12px 32px -10px rgba(0, 0, 0, 0.75), inset 0 1px 0 0 rgba(255, 255, 255, 0.07);
+    }
+
+    /* Transiciones entre vistas */
+    .app-view { display: none; }
+    .app-view.active-view {
+      display: block;
+      animation: viewSlideIn 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    @keyframes viewSlideIn {
+      from { opacity: 0; transform: translateY(10px) scale(0.99); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* Animación de pulso en contadores */
+    @keyframes popBadge {
+      0% { transform: scale(0.75); }
+      55% { transform: scale(1.18); }
+      100% { transform: scale(1); }
+    }
+    .pop-anim {
+      animation: popBadge 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* Filas de la carta */
+    .dish-row {
+      position: relative;
+      transition: background-color 0.16s ease;
+    }
+    .dish-row.dish-in-order {
+      background: linear-gradient(90deg, rgba(244, 63, 94, 0.10) 0%, transparent 90%);
+    }
+    .dish-row.dish-in-order::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 12%;
+      bottom: 12%;
+      width: 3.5px;
+      border-radius: 0 4px 4px 0;
+      background: linear-gradient(180deg, #fbbf24, #f43f5e);
+      box-shadow: 0 0 14px rgba(244, 63, 94, 0.65);
+    }
+
+    #menuList.menu-compact .dish-row { padding-top: 0.68rem; padding-bottom: 0.68rem; }
+    #menuList.menu-compact h3 { font-size: 0.90rem; line-height: 1.25rem; }
+    #menuList.menu-compact .dish-add { width: 2.5rem; height: 2.5rem; }
+
+    /* Salón de Mesas */
+    #tableSelector {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 0.65rem;
+    }
+    @media (min-width: 420px) {
+      #tableSelector { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+    }
+    .table-tile {
+      position: relative;
+      min-height: 4.85rem;
+      border-radius: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.2rem;
+      background: var(--surface);
+      border: 1px solid var(--border-subtle);
+      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.04);
+      overflow: hidden;
+    }
+    .dark .table-tile {
+      background: linear-gradient(160deg, #17171e 0%, #0f0f14 100%);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    }
+    .table-tile[data-state="occupied"] {
+      border-color: rgba(251, 191, 36, 0.5);
+      background: linear-gradient(160deg, rgba(245, 158, 11, 0.16) 0%, rgba(245, 158, 11, 0.04) 100%);
+    }
+    .table-tile[data-state="active"] {
+      border: 1.5px solid #f43f5e;
+      background: linear-gradient(160deg, rgba(244, 63, 94, 0.22) 0%, rgba(225, 29, 72, 0.07) 100%);
+      box-shadow: 0 8px 24px -6px rgba(244, 63, 94, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    }
+
+    /* Dock Flotante Android */
+    .floating-dock {
+      background: rgba(255, 255, 255, 0.90);
+      backdrop-filter: blur(26px) saturate(210%);
+      -webkit-backdrop-filter: blur(26px) saturate(210%);
+      border: 1px solid rgba(24, 24, 27, 0.09);
+      box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.20), 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+    .dark .floating-dock {
+      background: rgba(18, 18, 24, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.11);
+      box-shadow: 0 20px 46px -8px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.09);
+    }
+
+    .dock-btn {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.2rem;
+      flex: 1;
+      height: 3.45rem;
+      border-radius: 1.3rem;
+      color: #71717a;
+      transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .dark .dock-btn { color: #8e8e98; }
+    .dock-btn.nav-active {
+      color: #be123c;
+      background: rgba(244, 63, 94, 0.12);
+      transform: translateY(-1px);
+    }
+    .dark .dock-btn.nav-active {
+      color: #ffffff;
+      background: linear-gradient(180deg, rgba(244, 63, 94, 0.28) 0%, rgba(244, 63, 94, 0.12) 100%);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    }
+
+    .spotlight-input:focus {
+      box-shadow: 0 0 0 3px rgba(244, 63, 94, 0.20);
+    }
+
+    body.search-mode #quickFrequentBar { display: none !important; }
+    body.search-mode #resultsCount { font-weight: 800; color: #f43f5e; }
+
+    mark {
+      background: linear-gradient(120deg, rgba(251, 191, 36, 0.36), rgba(245, 158, 11, 0.24));
+      color: inherit;
+      padding: 0 3px;
+      border-radius: 4px;
+      font-weight: 800;
+    }
+    .dark mark { color: #fde68a; }
+  </style>
+</head>
+<body class="relative z-10 text-zinc-900 dark:text-zinc-100 font-sans antialiased selection:bg-rose-600 selection:text-white pb-[calc(9.5rem+env(safe-area-inset-bottom))] transition-colors duration-200">
+
+  <!-- CABECERA GLASSMORPHISM -->
+  <header class="sticky top-0 z-30 glass-header">
+    <div class="max-w-2xl mx-auto px-4 pt-3 pb-2.5">
+      <div class="flex items-center justify-between gap-2">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="min-w-0">
+            <div class="flex items-center gap-2">
+              <!-- Nombre con estilo chifa: pincel + farol -->
+              <h1 class="chifa-name flex items-center gap-1.5 min-w-0 text-zinc-900 dark:text-white">
+                <svg class="chifa-lantern shrink-0 text-rose-600 dark:text-rose-500" viewBox="0 0 24 30" aria-hidden="true">
+                  <path d="M12 0v3.5" stroke="#d97706" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+                  <rect x="7" y="3" width="10" height="3" rx="1.2" fill="#fbbf24"/>
+                  <ellipse cx="12" cy="15" rx="10" ry="9" fill="currentColor"/>
+                  <path d="M12 6.3c-4.2 3.2-4.2 14.2 0 17.4M12 6.3c4.2 3.2 4.2 14.2 0 17.4" stroke="#fbbf24" stroke-opacity=".55" stroke-width="1" fill="none"/>
+                  <rect x="7" y="24" width="10" height="3" rx="1.2" fill="#fbbf24"/>
+                  <path d="M12 27v3" stroke="#fbbf24" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+                </svg>
+                <span class="truncate">Chifa <span class="chifa-name-accent bg-gradient-to-r from-rose-600 to-amber-500 dark:from-rose-400 dark:to-amber-300 bg-clip-text text-transparent">Katzumy</span></span>
+              </h1>
+              <span id="totalMenuBadge" class="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-zinc-200/80 dark:bg-white/[0.07] text-zinc-600 dark:text-zinc-400 shrink-0">
+                86
+              </span>
+            </div>
+            <!-- Selector rápido de mesa activa -->
+            <button type="button" onclick="haptic(10); switchTab('mesas')" class="spring-press mt-1 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-rose-500/10 dark:bg-rose-500/15 border border-rose-500/25 text-[11px] font-extrabold text-rose-700 dark:text-rose-300">
+              <span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>
+              <span id="headerActiveTable">Mesa 1</span>
+              <svg class="w-3 h-3 opacity-75" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-1.5 shrink-0">
+          <button onclick="haptic(10); openBackupModal()" aria-label="Respaldo" class="spring-press w-9 h-9 rounded-2xl bg-zinc-200/75 dark:bg-white/[0.06] border border-zinc-300/50 dark:border-white/[0.08] text-zinc-700 dark:text-zinc-300 flex items-center justify-center">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.1" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+            </svg>
+          </button>
+
+          <button onclick="haptic(10); toggleTheme()" aria-label="Tema" class="spring-press w-9 h-9 rounded-2xl bg-zinc-200/75 dark:bg-white/[0.06] border border-zinc-300/50 dark:border-white/[0.08] text-zinc-700 dark:text-amber-300 flex items-center justify-center">
+            <svg class="w-4 h-4 hidden dark:block" fill="none" stroke="currentColor" stroke-width="2.1" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+            </svg>
+            <svg class="w-4 h-4 block dark:hidden" fill="none" stroke="currentColor" stroke-width="2.1" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+            </svg>
+          </button>
+
+          <button onclick="haptic(12); openDishModal()" class="spring-press h-9 px-3.5 rounded-2xl bg-gradient-to-r from-rose-600 to-rose-700 text-white text-xs font-extrabold flex items-center gap-1 shadow-md shadow-rose-600/25">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.6" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+            </svg>
+            <span>Nuevo</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Buscador y Categorías -->
+      <div id="cartaHeaderControls" class="mt-2.5">
+        <div class="relative flex items-center">
+          <span class="absolute left-3.5 text-zinc-400 pointer-events-none">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 104.5 4.5a7.5 7.5 0 0012.15 12.15z"/>
+            </svg>
+          </span>
+          <input 
+            type="text" 
+            id="searchInput" 
+            placeholder="Buscar plato, wantán o precio..." 
+            autocomplete="off"
+            class="spotlight-input w-full bg-white/95 dark:bg-[#14141a] text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 pl-10 pr-10 py-2.5 rounded-2xl border border-zinc-200/90 dark:border-white/[0.09] focus:border-rose-500 dark:focus:border-rose-500/70 focus:outline-none font-medium transition"
+          >
+          <button 
+            id="clearSearchBtn" 
+            onclick="haptic(8); clearSearch()" 
+            aria-label="Limpiar"
+            class="hidden absolute right-2.5 w-7 h-7 rounded-xl bg-zinc-200 dark:bg-white/10 text-zinc-600 dark:text-zinc-300 flex items-center justify-center"
+          >
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+
+        <div id="categoryChips" class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-2.5 pb-0.5"></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <main class="max-w-2xl mx-auto px-4 pt-3.5">
+
+    <!-- ==================== VISTA 1: CARTA ==================== -->
+    <section id="view-carta" class="app-view active-view">
+      <!-- Favoritos rápidos -->
+      <div id="quickFrequentBar" class="hidden mb-3.5">
+        <div class="flex items-center justify-between mb-1.5 px-0.5">
+          <span class="text-[10px] font-extrabold uppercase tracking-[0.14em] text-amber-700/90 dark:text-amber-400/90">Más pedidos</span>
+        </div>
+        <div id="frequentChips" class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-0.5"></div>
+      </div>
+
+      <!-- Barra de conteo y orden -->
+      <div class="flex items-center justify-between gap-2 mb-2.5 px-0.5">
+        <span id="resultsCount" class="text-xs font-semibold text-zinc-500 dark:text-zinc-400">86 platos</span>
+        <select id="sortFilter" onchange="renderMenu()" aria-label="Ordenar" class="bg-white dark:bg-[#14141a] text-xs font-semibold text-zinc-700 dark:text-zinc-300 border border-zinc-200/80 dark:border-white/[0.08] rounded-xl px-2.5 py-1.5 focus:outline-none">
+          <option value="default">Orden de carta</option>
+          <option value="price_asc">Menor precio</option>
+          <option value="price_desc">Mayor precio</option>
+          <option value="edited_only">Precios editados</option>
+          <option value="available_only">Solo disponibles</option>
+        </select>
+      </div>
+
+      <!-- Tarjeta contenedora de platos -->
+      <div id="menuList" class="luxe-card divide-y divide-zinc-200/60 dark:divide-white/[0.06] rounded-3xl overflow-hidden"></div>
+
+      <!-- Estado vacío -->
+      <div id="emptyState" class="hidden text-center py-16 px-4">
+        <h3 class="text-sm font-bold text-zinc-900 dark:text-zinc-100">Sin coincidencias</h3>
+        <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Intenta con otro término o limpia los filtros.</p>
+        <button onclick="resetFilters()" class="spring-press mt-4 bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 font-bold px-4 py-2.5 rounded-2xl text-xs">
+          Mostrar toda la carta
+        </button>
+      </div>
+    </section>
+
+    <!-- ==================== VISTA 2: SALÓN / MESAS ==================== -->
+    <section id="view-mesas" class="app-view">
+      <div class="luxe-card rounded-3xl p-4 mb-3.5 flex items-center justify-between gap-3">
+        <div>
+          <span class="text-[10px] font-extrabold uppercase tracking-[0.14em] text-rose-600 dark:text-rose-400 block mb-0.5">Salón Katzumy</span>
+          <h2 id="tablePanelTitle" class="text-base font-extrabold text-zinc-900 dark:text-white">Selecciona una mesa</h2>
+          <p id="occupiedSummaryText" class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">0 mesas ocupadas</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="moveTableBtn" type="button" onclick="haptic(12); beginMoveOrder()" class="spring-press px-3.5 py-2.5 rounded-2xl bg-amber-500/15 border border-amber-500/35 text-xs font-extrabold text-amber-700 dark:text-amber-300">
+            Trasladar
+          </button>
+          <button id="cancelMoveTableBtn" type="button" onclick="haptic(10); cancelMoveOrder()" class="hidden spring-press px-3.5 py-2.5 rounded-2xl bg-zinc-200 dark:bg-white/10 text-xs font-bold text-zinc-800 dark:text-zinc-200">
+            Cancelar
+          </button>
+        </div>
+      </div>
+
+      <div id="tableSelector"></div>
+    </section>
+
+    <!-- ==================== VISTA 3: CUENTA / CAJA ==================== -->
+    <section id="view-cuenta" class="app-view">
+      <div class="luxe-card rounded-3xl p-4 sm:p-5">
+        <!-- Encabezado tipo recibo -->
+        <div class="flex items-center justify-between pb-3.5 border-b border-dashed border-zinc-300 dark:border-white/10">
+          <div>
+            <span class="text-[10px] font-extrabold uppercase tracking-[0.14em] text-amber-600 dark:text-amber-400 block">Comanda Activa</span>
+            <h2 id="drawerTableTitle" class="text-lg font-extrabold text-zinc-900 dark:text-white mt-0.5">Mesa 1</h2>
+          </div>
+          <button type="button" onclick="haptic(10); switchTab('carta')" class="spring-press px-3.5 py-2 rounded-2xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 text-xs font-extrabold">
+            + Agregar
+          </button>
+        </div>
+
+        <!-- Extras de empaque -->
+        <div class="pt-3.5 pb-1 flex items-center gap-2 overflow-x-auto no-scrollbar">
+          <button onclick="haptic(12); addCustomExtra('Táper / Envase', 1)" class="spring-press px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-white/[0.06] border border-zinc-200/80 dark:border-white/[0.08] text-[11px] font-bold text-zinc-700 dark:text-zinc-200 whitespace-nowrap shrink-0">+ Táper (S/ 1)</button>
+          <button onclick="haptic(12); addCustomExtra('Bolsa / Cubiertos', 0.5)" class="spring-press px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-white/[0.06] border border-zinc-200/80 dark:border-white/[0.08] text-[11px] font-bold text-zinc-700 dark:text-zinc-200 whitespace-nowrap shrink-0">+ Envase (S/ 0.50)</button>
+          <button onclick="haptic(10); toggleCustomExtraForm()" class="spring-press px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-white/[0.06] border border-zinc-200/80 dark:border-white/[0.08] text-[11px] font-bold text-zinc-700 dark:text-zinc-200 whitespace-nowrap shrink-0">+ Extra libre</button>
+        </div>
+
+        <div id="customExtraForm" class="hidden bg-zinc-100 dark:bg-black/40 p-2.5 rounded-2xl mt-2 border border-zinc-200 dark:border-white/[0.08] flex items-center gap-2">
+          <input type="text" id="extraNameInput" placeholder="Ej. Porción arroz" class="flex-1 bg-white dark:bg-[#18181f] text-zinc-900 dark:text-white px-3 py-2 rounded-xl border border-zinc-200 dark:border-white/10 text-xs font-medium focus:outline-none">
+          <input type="number" id="extraPriceInput" step="0.50" min="0" placeholder="S/" class="font-mono w-20 bg-white dark:bg-[#18181f] text-zinc-900 dark:text-white px-2.5 py-2 rounded-xl border border-zinc-200 dark:border-white/10 text-xs font-bold focus:outline-none">
+          <button onclick="haptic(15); submitCustomExtra()" class="bg-rose-600 text-white px-3.5 py-2 rounded-xl text-xs font-extrabold">OK</button>
+        </div>
+
+        <!-- Lista de platos en comanda -->
+        <div id="orderItemsList" class="py-3.5 space-y-2.5"></div>
+
+        <!-- Módulo Calculadora de Vuelto -->
+        <div class="bg-zinc-100/90 dark:bg-black/45 rounded-2xl p-3.5 my-2 border border-zinc-200/80 dark:border-white/[0.07]">
+          <div class="flex items-center justify-between gap-3">
+            <div class="flex-1">
+              <label for="cashPaidInput" class="block text-[10px] font-extrabold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1.5">Efectivo recibido (S/)</label>
+              <div class="flex items-center gap-1.5">
+                <input type="number" id="cashPaidInput" oninput="calculateChange()" placeholder="0.00" class="font-mono w-full bg-white dark:bg-[#18181f] text-zinc-900 dark:text-white font-bold px-3 py-2 rounded-xl border border-zinc-200 dark:border-white/10 focus:outline-none">
+                <button type="button" onclick="haptic(10); setQuickCash(20)" class="spring-press font-mono px-2.5 py-2 rounded-xl bg-white dark:bg-[#18181f] border border-zinc-200 dark:border-white/10 text-xs font-bold">20</button>
+                <button type="button" onclick="haptic(10); setQuickCash(50)" class="spring-press font-mono px-2.5 py-2 rounded-xl bg-white dark:bg-[#18181f] border border-zinc-200 dark:border-white/10 text-xs font-bold">50</button>
+                <button type="button" onclick="haptic(10); setQuickCash(100)" class="spring-press font-mono px-2.5 py-2 rounded-xl bg-white dark:bg-[#18181f] border border-zinc-200 dark:border-white/10 text-xs font-bold">100</button>
+              </div>
+            </div>
+            <div class="text-right pl-3 border-l border-zinc-200 dark:border-white/10 shrink-0">
+              <span class="block text-[10px] font-extrabold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Vuelto</span>
+              <span id="changeDueText" class="font-mono text-lg font-extrabold text-emerald-600 dark:text-emerald-400">S/ 0.00</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cierre y Cobro -->
+        <div class="pt-3.5 border-t border-dashed border-zinc-300 dark:border-white/10 flex items-center justify-between gap-2">
+          <div>
+            <span class="text-[10px] text-zinc-500 dark:text-zinc-400 uppercase tracking-wider font-extrabold block">Total a Cobrar</span>
+            <span id="drawerTotalText" class="font-mono text-2xl font-extrabold text-zinc-900 dark:text-white">S/ 0.00</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="haptic(12); copyOrderSummary()" class="spring-press bg-zinc-100 dark:bg-white/[0.08] text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-white/10 font-bold px-3.5 py-3 rounded-2xl text-xs">Copiar</button>
+            <button id="releaseTableBtn" onclick="haptic(20); confirmReleaseTable()" class="spring-press bg-gradient-to-r from-rose-600 to-rose-700 text-white font-extrabold px-4 py-3 rounded-2xl text-xs shadow-lg shadow-rose-600/25">Cobrar y Liberar</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- PÍLDORA FLOTANTE DE COMANDA ACTIVA -->
+  <div id="orderBar" class="fixed bottom-[calc(4.85rem+env(safe-area-inset-bottom))] inset-x-0 z-30 px-4 pb-2 pointer-events-none transition-all duration-300 translate-y-24 opacity-0">
+    <div onclick="haptic(12); switchTab('cuenta')" class="pointer-events-auto max-w-md mx-auto bg-zinc-950/95 dark:bg-white text-white dark:text-zinc-950 rounded-2xl px-4 py-2.5 shadow-2xl border border-white/15 dark:border-black/10 flex items-center justify-between gap-3 cursor-pointer active:scale-[0.97] transition">
+      <div class="flex items-center gap-2.5 min-w-0">
+        <span id="orderCountBadge" class="font-mono bg-rose-600 text-white px-2.5 py-0.5 rounded-xl font-extrabold text-xs">0</span>
+        <div class="truncate">
+          <span id="activeTableLabel" class="text-xs font-extrabold uppercase tracking-wider text-amber-400 dark:text-rose-600">Mesa 1</span>
+          <span class="text-xs opacity-75"> &bull; Ver cuenta</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 shrink-0">
+        <span id="orderTotalText" class="font-mono text-sm font-extrabold">S/ 0.00</span>
+        <svg class="w-4 h-4 opacity-75" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- DOCK FLOTANTE INFERIOR -->
+  <nav aria-label="Navegación principal" class="fixed bottom-0 inset-x-0 z-40 px-4 pb-[calc(0.65rem+env(safe-area-inset-bottom))] pointer-events-none">
+    <div class="pointer-events-auto max-w-md mx-auto floating-dock rounded-[1.7rem] p-1.5 flex items-center justify-between gap-1">
+      
+      <button type="button" id="nav-mesas" onclick="haptic(10); switchTab('mesas')" class="dock-btn">
+        <div class="relative">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.1" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+          </svg>
+          <span id="navOccupiedDot" class="hidden absolute -top-0.5 -right-1 w-2 h-2 rounded-full bg-amber-400 ring-2 ring-white dark:ring-[#121218]"></span>
+        </div>
+        <span class="text-[10px] font-extrabold tracking-wide">Mesas</span>
+      </button>
+
+      <button type="button" id="nav-carta" onclick="haptic(10); switchTab('carta')" class="dock-btn nav-active">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.1" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+        </svg>
+        <span class="text-[10px] font-extrabold tracking-wide">Carta</span>
+      </button>
+
+      <button type="button" id="nav-cuenta" onclick="haptic(10); switchTab('cuenta')" class="dock-btn">
+        <div class="relative">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.1" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+          </svg>
+          <span id="navCuentaBadge" class="hidden font-mono absolute -top-1.5 -right-2.5 min-w-[17px] h-[17px] px-1 rounded-full bg-rose-600 text-white text-[9px] font-extrabold flex items-center justify-center shadow">0</span>
+        </div>
+        <span class="text-[10px] font-extrabold tracking-wide">Cuenta</span>
+      </button>
+
+    </div>
+  </nav>
+
+  <!-- MODAL NOTA -->
+  <div id="noteModal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="luxe-card w-full max-w-sm rounded-3xl p-5 shadow-2xl">
+      <div class="flex items-center justify-between mb-3">
+        <div class="min-w-0 pr-2">
+          <span class="text-[10px] font-extrabold uppercase tracking-widest text-amber-500">Comanda Cocina</span>
+          <h3 id="noteDishTitle" class="text-sm font-extrabold text-zinc-900 dark:text-white truncate">Plato</h3>
+        </div>
+        <button onclick="closeNoteModal()" class="w-8 h-8 rounded-xl bg-zinc-100 dark:bg-white/10 text-zinc-500 flex items-center justify-center shrink-0">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="flex flex-wrap gap-1.5 mb-3">
+        <button type="button" onclick="haptic(8); toggleQuickNoteChip('Sin cebolla')" class="spring-press px-2.5 py-1.5 rounded-xl bg-zinc-100 dark:bg-white/[0.06] border border-zinc-200 dark:border-white/10 text-xs font-semibold">Sin cebolla</button>
+        <button type="button" onclick="haptic(8); toggleQuickNoteChip('Para llevar')" class="spring-press px-2.5 py-1.5 rounded-xl bg-zinc-100 dark:bg-white/[0.06] border border-zinc-200 dark:border-white/10 text-xs font-semibold">Para llevar</button>
+        <button type="button" onclick="haptic(8); toggleQuickNoteChip('Helada')" class="spring-press px-2.5 py-1.5 rounded-xl bg-zinc-100 dark:bg-white/[0.06] border border-zinc-200 dark:border-white/10 text-xs font-semibold">Helada</button>
+        <button type="button" onclick="haptic(8); toggleQuickNoteChip('Sin helar')" class="spring-press px-2.5 py-1.5 rounded-xl bg-zinc-100 dark:bg-white/[0.06] border border-zinc-200 dark:border-white/10 text-xs font-semibold">Sin helar</button>
+        <button type="button" onclick="haptic(8); toggleQuickNoteChip('Bien cocido')" class="spring-press px-2.5 py-1.5 rounded-xl bg-zinc-100 dark:bg-white/[0.06] border border-zinc-200 dark:border-white/10 text-xs font-semibold">Bien cocido</button>
+        <button type="button" onclick="haptic(8); toggleQuickNoteChip('Poco ají')" class="spring-press px-2.5 py-1.5 rounded-xl bg-zinc-100 dark:bg-white/[0.06] border border-zinc-200 dark:border-white/10 text-xs font-semibold">Poco ají</button>
+      </div>
+
+      <input type="hidden" id="noteOrderIndex">
+      <input type="text" id="noteTextInput" placeholder="Indicación libre..." class="w-full bg-zinc-100 dark:bg-black/50 text-zinc-900 dark:text-white px-3.5 py-2.5 rounded-2xl border border-zinc-200 dark:border-white/10 focus:outline-none text-sm font-medium mb-4">
+
+      <div class="flex items-center justify-between gap-2">
+        <button type="button" onclick="clearNoteInput()" class="text-xs font-bold text-zinc-400 px-2 py-2">Limpiar</button>
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="closeNoteModal()" class="bg-zinc-100 dark:bg-white/10 text-zinc-700 dark:text-zinc-300 font-bold px-3.5 py-2.5 rounded-xl text-xs">Cancelar</button>
+          <button type="button" onclick="haptic(15); saveItemNote()" class="bg-rose-600 text-white font-extrabold px-4 py-2.5 rounded-xl text-xs">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL EDICIÓN PLATO -->
+  <div id="dishModal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="luxe-card w-full max-w-md rounded-3xl p-5 shadow-2xl">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2">
+          <h2 id="modalTitle" class="text-base font-extrabold text-zinc-900 dark:text-white">Editar Plato</h2>
+          <span id="editedBadgeModal" class="hidden text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-600 dark:text-amber-300">Editado</span>
+        </div>
+        <button onclick="closeDishModal()" class="w-8 h-8 rounded-xl bg-zinc-100 dark:bg-white/10 text-zinc-500 flex items-center justify-center">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <form id="dishForm" onsubmit="saveDish(event)" class="space-y-4">
+        <input type="hidden" id="editDishId">
+        <div>
+          <label class="block text-[10px] font-extrabold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1">Nombre</label>
+          <input type="text" id="dishNameInput" required placeholder="Ej. Wantán frito" class="w-full bg-zinc-100 dark:bg-black/50 text-zinc-900 dark:text-white px-3.5 py-2.5 rounded-2xl border border-zinc-200 dark:border-white/10 focus:outline-none font-medium">
+        </div>
+        <div>
+          <label class="block text-[10px] font-extrabold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1">Categoría</label>
+          <select id="dishCategoryInput" class="w-full bg-zinc-100 dark:bg-black/50 text-zinc-900 dark:text-white px-3.5 py-2.5 rounded-2xl border border-zinc-200 dark:border-white/10 focus:outline-none font-medium">
+            <option value="Entradas">Entradas / Porciones</option>
+            <option value="Bebidas">Bebidas</option>
+            <option value="Platos Dulces">Platos Dulces</option>
+            <option value="Platos Especiales">Platos Especiales</option>
+            <option value="Aeropuertos">Aeropuertos</option>
+            <option value="Combinados">Combinados</option>
+            <option value="Tallarines">Tallarines</option>
+            <option value="Sopas">Sopas</option>
+            <option value="Chaufa">Chaufa</option>
+          </select>
+        </div>
+
+        <div class="bg-zinc-100 dark:bg-black/45 p-3.5 rounded-2xl border border-zinc-200 dark:border-white/10">
+          <div class="flex items-center justify-between mb-2">
+            <label class="text-[10px] font-extrabold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Precio (S/)</label>
+            <button type="button" id="restoreDefaultPriceBtn" onclick="restoreSingleDishPrice()" class="hidden text-[11px] font-bold text-amber-600 dark:text-amber-400 underline">Volver al original</button>
+          </div>
+          <div class="flex items-center gap-2">
+            <input type="number" id="dishPriceInput" step="any" min="0" inputmode="decimal" required class="font-mono w-28 bg-white dark:bg-[#18181f] text-zinc-900 dark:text-white px-3 py-2 rounded-xl border border-zinc-200 dark:border-white/10 focus:outline-none text-lg font-extrabold text-center">
+            <div class="grid grid-cols-4 gap-1 flex-1">
+              <button type="button" onclick="haptic(8); adjustModalPrice(-1)" class="spring-press font-mono py-2 rounded-xl bg-white dark:bg-[#18181f] border border-zinc-200 dark:border-white/10 text-xs font-extrabold">-1</button>
+              <button type="button" onclick="haptic(8); adjustModalPrice(-0.5)" class="spring-press font-mono py-2 rounded-xl bg-white dark:bg-[#18181f] border border-zinc-200 dark:border-white/10 text-xs font-extrabold">-0.5</button>
+              <button type="button" onclick="haptic(8); adjustModalPrice(0.5)" class="spring-press font-mono py-2 rounded-xl bg-white dark:bg-[#18181f] border border-zinc-200 dark:border-white/10 text-xs font-extrabold">+0.5</button>
+              <button type="button" onclick="haptic(8); adjustModalPrice(1)" class="spring-press font-mono py-2 rounded-xl bg-white dark:bg-[#18181f] border border-zinc-200 dark:border-white/10 text-xs font-extrabold">+1</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between bg-zinc-100 dark:bg-black/45 p-3 rounded-2xl border border-zinc-200 dark:border-white/10">
+          <div>
+            <span class="text-xs font-bold text-zinc-900 dark:text-white block">Disponible</span>
+            <span class="text-[11px] text-zinc-500">Desactiva si se agotó</span>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="dishAvailableInput" checked class="sr-only peer">
+            <div class="w-11 h-6 bg-zinc-300 dark:bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+          </label>
+        </div>
+
+        <div class="flex items-center justify-between pt-1 gap-2">
+          <button type="button" id="deleteDishBtn" onclick="deleteCurrentDish()" class="hidden text-rose-500 font-bold px-3 py-2.5 rounded-xl text-xs">Eliminar</button>
+          <div class="flex items-center gap-2 ml-auto">
+            <button type="button" onclick="closeDishModal()" class="bg-zinc-100 dark:bg-white/10 text-zinc-700 dark:text-zinc-300 font-bold px-4 py-2.5 rounded-xl text-xs">Cancelar</button>
+            <button type="submit" onclick="haptic(15)" class="bg-rose-600 text-white font-extrabold px-5 py-2.5 rounded-xl text-xs">Guardar</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL RESPALDO -->
+  <div id="backupModal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="luxe-card w-full max-w-md rounded-3xl p-5 shadow-2xl">
+      <div class="flex items-center justify-between mb-3">
+        <div>
+          <h2 class="text-base font-extrabold text-zinc-900 dark:text-white">Respaldo de Datos</h2>
+          <p class="text-xs text-zinc-500">Exporta o restaura carta, precios y comandas</p>
+        </div>
+        <button onclick="closeBackupModal()" class="w-8 h-8 rounded-xl bg-zinc-100 dark:bg-white/10 text-zinc-500 flex items-center justify-center">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div class="space-y-3">
+        <textarea id="backupTextarea" rows="4" class="font-mono w-full bg-zinc-100 dark:bg-black/50 text-zinc-900 dark:text-zinc-200 p-3 rounded-2xl border border-zinc-200 dark:border-white/10 text-xs focus:outline-none"></textarea>
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="copyBackupData()" class="bg-zinc-100 dark:bg-white/10 text-zinc-800 dark:text-zinc-200 font-bold px-4 py-2.5 rounded-xl text-xs">Copiar</button>
+          <button type="button" onclick="downloadBackupData()" class="bg-zinc-100 dark:bg-white/10 text-zinc-800 dark:text-zinc-200 font-bold px-4 py-2.5 rounded-xl text-xs">Descargar</button>
+          <button type="button" onclick="importBackupData()" class="flex-1 bg-rose-600 text-white font-extrabold py-2.5 rounded-xl text-xs">Cargar Respaldo</button>
+        </div>
+        <div class="pt-3 border-t border-zinc-200 dark:border-white/10 flex items-center justify-between text-xs">
+          <button type="button" onclick="confirmResetAllMenu()" class="text-rose-500 font-semibold underline">Restaurar carta base</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL CONFIRMACIÓN FUSIÓN DE MESAS -->
+  <div id="mergeConfirmModal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="luxe-card w-full max-w-sm rounded-3xl p-5 shadow-2xl">
+      <span class="text-[10px] font-extrabold uppercase tracking-widest text-amber-500 block mb-1">Mesa Ocupada</span>
+      <h3 class="text-base font-extrabold text-zinc-900 dark:text-white mb-2">¿Unir pedidos?</h3>
+      <p id="mergeConfirmText" class="text-xs text-zinc-600 dark:text-zinc-300 leading-relaxed mb-5"></p>
+      <div class="flex items-center justify-end gap-2">
+        <button type="button" onclick="closeMergeConfirmModal()" class="spring-press bg-zinc-100 dark:bg-white/10 text-zinc-700 dark:text-zinc-300 font-bold px-4 py-2.5 rounded-xl text-xs">Cancelar</button>
+        <button type="button" id="confirmMergeBtn" class="spring-press bg-rose-600 text-white font-extrabold px-4 py-2.5 rounded-xl text-xs">Sí, unir pedidos</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST FLOTANTE -->
+  <div id="toast" class="fixed top-16 left-1/2 -translate-x-1/2 z-50 bg-zinc-950/95 dark:bg-white text-white dark:text-zinc-950 border border-white/15 px-4 py-2 rounded-full text-xs font-extrabold shadow-2xl opacity-0 pointer-events-none transition-all duration-150 whitespace-nowrap"></div>
+
+  <script>
+    // =========================================================================
+    // CATÁLOGO COMPLETO VERIFICADO (86 PLATOS EXACTOS)
+    // =========================================================================
+    const DEFAULT_MENU = [
+      { id: 85, name: "Porción de Wantán", category: "Entradas", price: 8 },
+      { id: 86, name: "Media Porción de Wantán", category: "Entradas", price: 4 },
+      { id: 1, name: "Jarra de Chicha", category: "Bebidas", price: 10 },
+      { id: 2, name: "Vaso de Chicha", category: "Bebidas", price: 2 },
+      { id: 3, name: "Inka Cola de Vidrio Personal", category: "Bebidas", price: 3 },
+      { id: 4, name: "Coca Cola de Vidrio Personal", category: "Bebidas", price: 3 },
+      { id: 5, name: "Inka Cola Descartable Personal", category: "Bebidas", price: 5 },
+      { id: 6, name: "Coca Cola Descartable Personal", category: "Bebidas", price: 5 },
+      { id: 7, name: "Agua", category: "Bebidas", price: 3 },
+      { id: 8, name: "Inka Cola Gordita", category: "Bebidas", price: 7 },
+      { id: 9, name: "Inka Cola de 1 Lt", category: "Bebidas", price: 10 },
+      { id: 10, name: "Coca Cola de 1 Lt", category: "Bebidas", price: 10 },
+      { id: 11, name: "Inka Cola de 1 Lt 1/2", category: "Bebidas", price: 12 },
+      { id: 12, name: "Coca Cola de 1 Lt 1/2", category: "Bebidas", price: 12 },
+      { id: 13, name: "Inka Cola de 2 Lt 1/2", category: "Bebidas", price: 16 },
+      { id: 14, name: "Inka Cola de 3 Lt", category: "Bebidas", price: 18 },
+      { id: 15, name: "Tipakay", category: "Platos Dulces", price: 18 },
+      { id: 16, name: "Tipakay d/ langostino", category: "Platos Dulces", price: 25 },
+      { id: 17, name: "Kalu Wantan c/ Chaufa", category: "Platos Dulces", price: 20 },
+      { id: 18, name: "Chancho c/ Piña", category: "Platos Dulces", price: 18 },
+      { id: 19, name: "Chancho c/ Durazno", category: "Platos Dulces", price: 18 },
+      { id: 20, name: "Chancho c/ Tamarindo", category: "Platos Dulces", price: 15 },
+      { id: 21, name: "Pollo c/ Tamarindo", category: "Platos Dulces", price: 15 },
+      { id: 22, name: "Pollo c/ Durazno", category: "Platos Dulces", price: 17 },
+      { id: 23, name: "Pollo c/ Piña", category: "Platos Dulces", price: 17 },
+      { id: 24, name: "Langostino c/ Tamarindo", category: "Platos Dulces", price: 22 },
+      { id: 25, name: "Enrollado c/ piña y durazno", category: "Platos Dulces", price: 25 },
+      { id: 26, name: "Chijaukay c/ Chaufa", category: "Platos Especiales", price: 18 },
+      { id: 27, name: "Chijaukay d/ Langostino", category: "Platos Especiales", price: 25 },
+      { id: 28, name: "Chancho c/ Champiñón", category: "Platos Especiales", price: 18 },
+      { id: 29, name: "Pollo c/ Champiñón", category: "Platos Especiales", price: 18 },
+      { id: 30, name: "Pollo en Salsa d/ Ostion", category: "Platos Especiales", price: 17 },
+      { id: 31, name: "Enrollado d/ pollo", category: "Platos Especiales", price: 20 },
+      { id: 32, name: "Enrollado d/ langostino", category: "Platos Especiales", price: 25 },
+      { id: 33, name: "Taypa c/ Chaufa", category: "Platos Especiales", price: 20 },
+      { id: 34, name: "Chicharron d/ Langostino", category: "Platos Especiales", price: 25 },
+      { id: 35, name: "Chicharrón d/ Pollo", category: "Platos Especiales", price: 18 },
+      { id: 36, name: "Aeropuerto d/ Pollo", category: "Aeropuertos", price: 16 },
+      { id: 37, name: "Aeropuerto d/ Res", category: "Aeropuertos", price: 17 },
+      { id: 38, name: "Aeropuerto d/ chancho", category: "Aeropuertos", price: 18 },
+      { id: 39, name: "Aeropuerto d/ langostino", category: "Aeropuertos", price: 22 },
+      { id: 40, name: "Aeropuerto Salvaje", category: "Aeropuertos", price: 25 },
+      { id: 41, name: "Aeropuerto 3 Sabores", category: "Aeropuertos", price: 25 },
+      { id: 42, name: "Aeropuerto d/ langostino y pollo", category: "Aeropuertos", price: 25 },
+      { id: 43, name: "Aeropuerto d/ langostino y chancho", category: "Aeropuertos", price: 25 },
+      { id: 44, name: "Pollo c/ Verdura", category: "Combinados", price: 15 },
+      { id: 45, name: "Combinado d/ Pollo", category: "Combinados", price: 16 },
+      { id: 46, name: "Combinado d/ Res", category: "Combinados", price: 17 },
+      { id: 47, name: "Combinado d/ Chancho", category: "Combinados", price: 18 },
+      { id: 48, name: "Combinado d/ langostino", category: "Combinados", price: 22 },
+      { id: 49, name: "Combinado especial", category: "Combinados", price: 25 },
+      { id: 50, name: "Combinado 3 Sabores", category: "Combinados", price: 25 },
+      { id: 51, name: "Lomo Saltado d/ Res", category: "Combinados", price: 18 },
+      { id: 52, name: "Saltado d/ Pollo", category: "Combinados", price: 18 },
+      { id: 53, name: "Saltado Oriental", category: "Combinados", price: 17 },
+      { id: 54, name: "Chancho c/ Verduras", category: "Combinados", price: 17 },
+      { id: 55, name: "Langostino c/ verdura", category: "Combinados", price: 25 },
+      { id: 56, name: "Tallarin Saltado d/ Pollo", category: "Tallarines", price: 14 },
+      { id: 57, name: "Tallarin Saltado d/ Res", category: "Tallarines", price: 16 },
+      { id: 58, name: "Tallarin Saltado d/ chancho", category: "Tallarines", price: 18 },
+      { id: 59, name: "Tallarin Saltado d/ langostino", category: "Tallarines", price: 22 },
+      { id: 60, name: "Tallarin Especial", category: "Tallarines", price: 22 },
+      { id: 61, name: "Tallarin d/ Pollo y Langostino", category: "Tallarines", price: 25 },
+      { id: 62, name: "Tallarin Saltado 3 sabores", category: "Tallarines", price: 25 },
+      { id: 63, name: "Tallarin saltado d/ chancho c/ langostino", category: "Tallarines", price: 25 },
+      { id: 64, name: "Tallarin de pollo c/ tausi", category: "Tallarines", price: 17 },
+      { id: 65, name: "Tallarín Saltado c/ Champiñón", category: "Tallarines", price: 18 },
+      { id: 66, name: "Tallarin de chancho c/ tausi", category: "Tallarines", price: 17 },
+      { id: 67, name: "Sopa Wantan Simple", category: "Sopas", price: 10 },
+      { id: 68, name: "Sopa Wantan Especial", category: "Sopas", price: 13 },
+      { id: 69, name: "Sopa Kion simple", category: "Sopas", price: 10 },
+      { id: 70, name: "Sopa Kion Especial", category: "Sopas", price: 13 },
+      { id: 71, name: "Sopa Fuchifu", category: "Sopas", price: 12 },
+      { id: 72, name: "Sopa d/ Pollo", category: "Sopas", price: 10 },
+      { id: 73, name: "Sustancia d/ Res", category: "Sopas", price: 13 },
+      { id: 74, name: "Sustancia d/ Pollo", category: "Sopas", price: 13 },
+      { id: 75, name: "Sopa Pac Pow", category: "Sopas", price: 14 },
+      { id: 76, name: "Chaufa d/ Pollo", category: "Chaufa", price: 14 },
+      { id: 77, name: "Chaufa d/ Res", category: "Chaufa", price: 15 },
+      { id: 78, name: "Chaufa d/ Chancho", category: "Chaufa", price: 17 },
+      { id: 79, name: "Chaufa d/ Langostino", category: "Chaufa", price: 22 },
+      { id: 80, name: "Chaufa Especial", category: "Chaufa", price: 22 },
+      { id: 81, name: "Chaufa 3 Sabores", category: "Chaufa", price: 25 },
+      { id: 82, name: "Chaufa d/ Langostino y Pollo", category: "Chaufa", price: 25 },
+      { id: 83, name: "Chaufa Super Especial", category: "Chaufa", price: 25 },
+      { id: 84, name: "Chaufa d/ Chancho y Langostino", category: "Chaufa", price: 25 }
+    ];
+
+    const CATEGORIES = ["Todos", "Entradas", "Chaufa", "Aeropuertos", "Combinados", "Tallarines", "Platos Especiales", "Platos Dulces", "Sopas", "Bebidas"];
+
+    const TABLES = [];
+    for (let i = 1; i <= 25; i++) {
+      TABLES.push({ id: `M${i}`, label: `Mesa ${i}`, short: `M${i}` });
+    }
+    TABLES.push({ id: "LL", label: "Para Llevar", short: "Llevar" });
+
+    const STORAGE_MENU_KEY = "katzumy_menu_v4";
+    const STORAGE_ORDERS_KEY = "katzumy_orders_v4";
+    const STORAGE_FREQ_KEY = "katzumy_freq_v4";
+    const STORAGE_THEME_KEY = "katzumy_theme_v4";
+
+    let menuItems = [];
+    let selectedCategory = "Todos";
+    let searchQuery = "";
+    let activeTable = "M1";
+    let activeTab = "carta";
+    let ordersByTable = {};
+    let movingOrder = false;
+    let pendingMergeDestination = null;
+    TABLES.forEach(t => { ordersByTable[t.id] = []; });
+
+    let usageStats = {};
+    let releaseConfirmPending = false;
+    let releaseConfirmTimer = null;
+    let resetAllConfirmPending = false;
+
+    function haptic(ms = 10) {
+      try { if (navigator.vibrate) navigator.vibrate(ms); } catch (e) {}
+    }
+
+    function switchTab(tabName) {
+      if (movingOrder && tabName !== "mesas") cancelMoveOrder();
+      activeTab = tabName;
+
+      document.querySelectorAll(".app-view").forEach(v => v.classList.remove("active-view"));
+      const targetView = document.getElementById(`view-${tabName}`);
+      if (targetView) targetView.classList.add("active-view");
+
+      document.querySelectorAll(".dock-btn").forEach(btn => btn.classList.remove("nav-active"));
+      const targetNav = document.getElementById(`nav-${tabName}`);
+      if (targetNav) targetNav.classList.add("nav-active");
+
+      const cartaControls = document.getElementById("cartaHeaderControls");
+      if (tabName === "carta") cartaControls.classList.remove("hidden");
+      else cartaControls.classList.add("hidden");
+
+      if (tabName === "cuenta") {
+        renderOrderDrawerItems();
+        calculateChange();
+      } else if (tabName === "mesas") {
+        renderTableSelector();
+      }
+
+      updateOrderUI();
+      window.scrollTo({ top: 0, behavior: "instant" });
+    }
+
+    function buildMergedMenu(savedList) {
+      const savedMap = new Map();
+      if (Array.isArray(savedList)) {
+        savedList.forEach(item => { if (item && typeof item.id === "number") savedMap.set(item.id, item); });
+      }
+      const merged = DEFAULT_MENU.map(baseItem => {
+        const userVersion = savedMap.get(baseItem.id);
+        if (userVersion) {
+          savedMap.delete(baseItem.id);
+          return {
+            id: baseItem.id,
+            name: userVersion.name || baseItem.name,
+            category: userVersion.category || baseItem.category,
+            price: typeof userVersion.price === "number" ? userVersion.price : baseItem.price,
+            available: userVersion.available !== false,
+            defaultPrice: baseItem.price,
+            defaultName: baseItem.name,
+            defaultCategory: baseItem.category,
+            isCustom: false
+          };
+        }
+        return {
+          ...baseItem,
+          available: true,
+          defaultPrice: baseItem.price,
+          defaultName: baseItem.name,
+          defaultCategory: baseItem.category,
+          isCustom: false
+        };
+      });
+      savedMap.forEach(extraItem => {
+        merged.unshift({
+          id: extraItem.id,
+          name: extraItem.name,
+          category: extraItem.category || "Chaufa",
+          price: Number(extraItem.price) || 0,
+          available: extraItem.available !== false,
+          defaultPrice: Number(extraItem.price) || 0,
+          defaultName: extraItem.name,
+          defaultCategory: extraItem.category || "Chaufa",
+          isCustom: true
+        });
+      });
+      return merged;
+    }
+
+    function normalizeOrdersData(raw) {
+      const normalized = {};
+      TABLES.forEach(table => {
+        const rows = raw && Array.isArray(raw[table.id]) ? raw[table.id] : [];
+        normalized[table.id] = rows.filter(row => row && typeof row.name === "string" &&
+          row.name.trim().length > 0 && Number.isFinite(Number(row.price)) && Number(row.price) >= 0 &&
+          Number.isInteger(Number(row.qty)) && Number(row.qty) > 0)
+          .slice(0, 500)
+          .map(row => ({
+            id: Number.isInteger(Number(row.id)) ? Number(row.id) : null,
+            name: row.name.trim().slice(0, 100),
+            price: Number(row.price),
+            qty: Number(row.qty),
+            note: typeof row.note === "string" ? row.note.slice(0, 250) : ""
+          }));
+      });
+      return normalized;
+    }
+
+    function initApp() {
+      try {
+        const savedTheme = localStorage.getItem(STORAGE_THEME_KEY);
+        if (savedTheme === "light") document.documentElement.classList.remove("dark");
+        else document.documentElement.classList.add("dark");
+      } catch (e) { document.documentElement.classList.add("dark"); }
+
+      try {
+        const rawMenu = localStorage.getItem(STORAGE_MENU_KEY);
+        menuItems = buildMergedMenu(rawMenu ? JSON.parse(rawMenu) : null);
+      } catch (e) { menuItems = buildMergedMenu(null); }
+
+      try {
+        const rawOrders = localStorage.getItem(STORAGE_ORDERS_KEY);
+        ordersByTable = normalizeOrdersData(rawOrders ? JSON.parse(rawOrders) : {});
+      } catch (e) { ordersByTable = normalizeOrdersData({}); }
+
+      try {
+        const rawFreq = localStorage.getItem(STORAGE_FREQ_KEY);
+        const parsedFreq = rawFreq ? JSON.parse(rawFreq) : {};
+        usageStats = parsedFreq && typeof parsedFreq === "object" && !Array.isArray(parsedFreq) ? parsedFreq : {};
+      } catch (e) { usageStats = {}; }
+
+      saveMenuToStorage();
+      saveOrdersToStorage();
+      renderTableSelector();
+      renderCategoryChips();
+      renderFrequentChips();
+      renderMenu();
+      updateOrderUI();
+      setupSearchListener();
+    }
+
+    function saveMenuToStorage() {
+      try { localStorage.setItem(STORAGE_MENU_KEY, JSON.stringify(menuItems)); return true; }
+      catch (e) { showToast("No se pudo guardar el menú"); return false; }
+    }
+
+    function saveOrdersToStorage() {
+      try { localStorage.setItem(STORAGE_ORDERS_KEY, JSON.stringify(ordersByTable)); return true; }
+      catch (e) { showToast("No se pudieron guardar las comandas"); return false; }
+    }
+
+    function saveFreqToStorage() {
+      try { localStorage.setItem(STORAGE_FREQ_KEY, JSON.stringify(usageStats)); return true; }
+      catch (e) { return false; }
+    }
+
+    function toggleTheme() {
+      const isDark = document.documentElement.classList.toggle("dark");
+      try { localStorage.setItem(STORAGE_THEME_KEY, isDark ? "dark" : "light"); } catch (e) {}
+    }
+
+    function normalizeText(text) {
+      return String(text)
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\binca\b/g, "inka")
+        .replace(/\b1\.5\b/g, "1 lt 1/2")
+        .replace(/\bd\//g, "de ")
+        .replace(/\bc\//g, "con ");
+    }
+
+    function formatPrice(price) { return "S/ " + Number(price).toFixed(2); }
+
+    // Redondea a céntimos para evitar errores de coma flotante (ej. 0.1 * 3)
+    function roundMoney(value) { return Math.round((Number(value) + Number.EPSILON) * 100) / 100; }
+
+    // Formato corto sin perder exactitud: 18 -> "18", 18.5 -> "18.5", 15.75 -> "15.75"
+    function formatShortPrice(value) { return String(roundMoney(value)); }
+
+    function escapeHTML(value) {
+      return String(value ?? "").replace(/[&<>"']/g, char => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      })[char]);
+    }
+
+    function highlightMatch(text, query) {
+      const safeText = escapeHTML(text);
+      if (!query) return safeText;
+      const tokens = query.trim().split(/\s+/).filter(t => t.length > 0);
+      if (tokens.length === 0) return safeText;
+      const escaped = tokens.map(t => escapeHTML(t).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+      const regex = new RegExp(`(${escaped.join('|')})`, 'gi');
+      return safeText.replace(regex, '<mark>$1</mark>');
+    }
+
+    function renderTableSelector() {
+      const container = document.getElementById("tableSelector");
+      let occupiedCount = 0;
+
+      container.innerHTML = TABLES.map(t => {
+        const isActive = t.id === activeTable;
+        const order = ordersByTable[t.id] || [];
+        const total = roundMoney(order.reduce((sum, item) => sum + (item.price * item.qty), 0));
+        const hasItems = order.length > 0;
+        if (hasItems) occupiedCount++;
+
+        const state = isActive ? "active" : hasItems ? "occupied" : "free";
+        const stateLabel = isActive ? "ACTIVA" : hasItems ? "OCUPADA" : "LIBRE";
+        const dotColor = isActive ? "bg-rose-500" : hasItems ? "bg-amber-400" : "bg-zinc-400/30";
+
+        return `
+          <button type="button" onclick="haptic(12); switchTable('${t.id}')" data-state="${state}" class="table-tile spring-press px-1.5 py-2">
+            <span class="flex items-center justify-center gap-1.5 text-sm font-extrabold tracking-tight text-zinc-900 dark:text-white">
+              <span class="w-1.5 h-1.5 rounded-full ${dotColor}"></span>
+              <span>${t.short}</span>
+            </span>
+            ${hasItems
+              ? `<span class="font-mono text-[11px] font-extrabold text-amber-700 dark:text-amber-300">S/${formatShortPrice(total)}</span>`
+              : `<span class="text-[10px] opacity-0">.</span>`
+            }
+            <span class="text-[8px] font-extrabold tracking-[0.12em] uppercase ${isActive ? 'text-rose-600 dark:text-rose-400' : hasItems ? 'text-amber-700 dark:text-amber-400' : 'text-zinc-400 dark:text-zinc-600'}">${stateLabel}</span>
+          </button>
+        `;
+      }).join("");
+
+      const summaryEl = document.getElementById("occupiedSummaryText");
+      if (summaryEl) summaryEl.textContent = occupiedCount === 1 ? "1 mesa con pedido" : `${occupiedCount} mesas con pedido`;
+
+      const navDot = document.getElementById("navOccupiedDot");
+      if (navDot) navDot.classList.toggle("hidden", occupiedCount === 0);
+    }
+
+    function switchTable(tableId) {
+      if (!TABLES.some(table => table.id === tableId)) return;
+      if (movingOrder) {
+        moveActiveOrderTo(tableId);
+        return;
+      }
+      activeTable = tableId;
+      resetReleaseConfirmation();
+      document.getElementById("cashPaidInput").value = "";
+      renderTableSelector();
+      renderMenu();
+      updateOrderUI();
+
+      const label = TABLES.find(t => t.id === tableId)?.label || tableId;
+      showToast(`${label} activa`);
+      switchTab("carta");
+    }
+
+    function beginMoveOrder() {
+      const sourceOrder = ordersByTable[activeTable] || [];
+      if (sourceOrder.length === 0) {
+        showToast("Esta mesa está vacía");
+        return;
+      }
+      movingOrder = true;
+      document.getElementById("tablePanelTitle").textContent = "Toca la mesa destino";
+      document.getElementById("moveTableBtn").classList.add("hidden");
+      document.getElementById("cancelMoveTableBtn").classList.remove("hidden");
+    }
+
+    function cancelMoveOrder() {
+      movingOrder = false;
+      document.getElementById("tablePanelTitle").textContent = "Selecciona una mesa";
+      document.getElementById("moveTableBtn").classList.remove("hidden");
+      document.getElementById("cancelMoveTableBtn").classList.add("hidden");
+    }
+
+    function executeOrderMove(destinationId) {
+      const sourceId = activeTable;
+      const sourceOrder = ordersByTable[sourceId] || [];
+      const destinationOrder = ordersByTable[destinationId] || [];
+      const destinationName = TABLES.find(t => t.id === destinationId)?.label || destinationId;
+
+      const oldSource = sourceOrder.map(item => ({ ...item }));
+      const oldDestination = destinationOrder.map(item => ({ ...item }));
+      const mergedDestination = oldDestination.map(item => ({ ...item }));
+      oldSource.forEach(item => {
+        const same = mergedDestination.find(row => row.id === item.id && row.name === item.name && row.price === item.price && row.note === item.note);
+        if (same) same.qty += item.qty;
+        else mergedDestination.push({ ...item });
+      });
+
+      ordersByTable[sourceId] = [];
+      ordersByTable[destinationId] = mergedDestination;
+      if (!saveOrdersToStorage()) {
+        ordersByTable[sourceId] = oldSource;
+        ordersByTable[destinationId] = oldDestination;
+        showToast("Error al guardar traslado");
+        return;
+      }
+      activeTable = destinationId;
+      resetReleaseConfirmation();
+      document.getElementById("cashPaidInput").value = "";
+      cancelMoveOrder();
+      renderTableSelector();
+      renderMenu();
+      updateOrderUI();
+      showToast(`Pedido movido a ${destinationName}`);
+    }
+
+    function moveActiveOrderTo(destinationId) {
+      const sourceId = activeTable;
+      if (destinationId === sourceId) {
+        cancelMoveOrder();
+        showToast("Ya estás en esa mesa");
+        return;
+      }
+      const destinationOrder = ordersByTable[destinationId] || [];
+      const sourceName = TABLES.find(t => t.id === sourceId)?.label || sourceId;
+      const destinationName = TABLES.find(t => t.id === destinationId)?.label || destinationId;
+
+      if (destinationOrder.length > 0) {
+        pendingMergeDestination = destinationId;
+        document.getElementById("mergeConfirmText").textContent = `${destinationName} ya tiene un pedido activo. ¿Deseas unir los platos de ${sourceName} con ${destinationName} y dejar ${sourceName} libre?`;
+        document.getElementById("mergeConfirmModal").classList.remove("hidden");
+        document.getElementById("confirmMergeBtn").onclick = () => {
+          haptic(15);
+          const dest = pendingMergeDestination;
+          closeMergeConfirmModal();
+          if (dest) executeOrderMove(dest);
+        };
+        return;
+      }
+
+      executeOrderMove(destinationId);
+    }
+
+    function closeMergeConfirmModal() {
+      pendingMergeDestination = null;
+      document.getElementById("mergeConfirmModal").classList.add("hidden");
+    }
+
+    function renderCategoryChips() {
+      const container = document.getElementById("categoryChips");
+      container.innerHTML = CATEGORIES.map(cat => {
+        const isActive = cat === selectedCategory;
+        return `
+          <button onclick="haptic(8); selectCategory('${cat}')" class="spring-press px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap shrink-0 cursor-pointer ${
+            isActive
+              ? 'bg-gradient-to-r from-rose-600 to-rose-700 text-white shadow-sm shadow-rose-600/25'
+              : 'bg-white/85 dark:bg-white/[0.06] text-zinc-600 dark:text-zinc-400 border border-zinc-200/80 dark:border-white/[0.08]'
+          }">${cat}</button>
+        `;
+      }).join("");
+    }
+
+    function selectCategory(cat) {
+      selectedCategory = cat;
+      renderCategoryChips();
+      renderMenu();
+    }
+
+    function renderFrequentChips() {
+      const bar = document.getElementById("quickFrequentBar");
+      const container = document.getElementById("frequentChips");
+      if (searchQuery.trim().length > 0) {
+        bar.classList.add("hidden");
+        return;
+      }
+
+      const dynamicIds = Object.entries(usageStats)
+        .sort((a, b) => b[1] - a[1])
+        .map(([id]) => Number(id));
+      const fallbackIds = [85, 76, 36, 45, 56, 9];
+      const combinedIds = [...new Set([...dynamicIds, ...fallbackIds])].slice(0, 7);
+
+      const topDishes = combinedIds
+        .map(id => menuItems.find(m => m.id === id && m.available !== false))
+        .filter(Boolean);
+
+      if (topDishes.length === 0) {
+        bar.classList.add("hidden");
+        return;
+      }
+      bar.classList.remove("hidden");
+      container.innerHTML = topDishes.map(dish => `
+        <button onclick="haptic(14); addToOrder(${dish.id})" class="spring-press px-3 py-2 rounded-2xl bg-white dark:bg-[#15151c] border border-zinc-200/90 dark:border-amber-400/25 text-xs font-bold text-zinc-800 dark:text-zinc-100 flex items-center gap-2 whitespace-nowrap shrink-0 shadow-xs">
+          <span>${escapeHTML(dish.name)}</span>
+          <span class="font-mono text-[11px] font-extrabold text-amber-600 dark:text-amber-400">S/${formatShortPrice(dish.price)}</span>
+        </button>
+      `).join("");
+    }
+
+    function setupSearchListener() {
+      const input = document.getElementById("searchInput");
+      const clearBtn = document.getElementById("clearSearchBtn");
+      input.addEventListener("input", (e) => {
+        searchQuery = e.target.value;
+        const searching = searchQuery.trim().length > 0;
+        clearBtn.classList.toggle("hidden", !searching);
+        document.body.classList.toggle("search-mode", searching);
+        renderFrequentChips();
+        renderMenu();
+      });
+    }
+
+    function clearSearch() {
+      const input = document.getElementById("searchInput");
+      input.value = "";
+      searchQuery = "";
+      document.getElementById("clearSearchBtn").classList.add("hidden");
+      document.body.classList.remove("search-mode");
+      input.focus();
+      renderFrequentChips();
+      renderMenu();
+    }
+
+    function resetFilters() {
+      selectedCategory = "Todos";
+      document.getElementById("sortFilter").value = "default";
+      clearSearch();
+      renderCategoryChips();
+      renderMenu();
+    }
+
+    function renderMenu() {
+      const menuList = document.getElementById("menuList");
+      const emptyState = document.getElementById("emptyState");
+      const resultsCount = document.getElementById("resultsCount");
+      const totalMenuBadge = document.getElementById("totalMenuBadge");
+      const sortMode = document.getElementById("sortFilter").value;
+      menuList.classList.toggle("menu-compact", selectedCategory === "Todos" && !searchQuery.trim());
+
+      totalMenuBadge.textContent = `${menuItems.length}`;
+      const normQuery = normalizeText(searchQuery.trim());
+      const queryTokens = normQuery.split(/\s+/).filter(Boolean);
+
+      let filtered = menuItems.filter(item => {
+        if (selectedCategory !== "Todos" && item.category !== selectedCategory) return false;
+        if (sortMode === "available_only" && item.available === false) return false;
+        if (sortMode === "edited_only" && item.price === item.defaultPrice) return false;
+        if (queryTokens.length === 0) return true;
+
+        const searchable = `${item.name.toLowerCase()} ${normalizeText(item.name)} ${normalizeText(item.category)} ${item.price}`;
+        return queryTokens.every(token => searchable.includes(token));
+      });
+
+      if (sortMode === "price_asc") filtered.sort((a, b) => a.price - b.price);
+      else if (sortMode === "price_desc") filtered.sort((a, b) => b.price - a.price);
+
+      resultsCount.textContent = `${filtered.length} ${filtered.length === 1 ? 'plato' : 'platos'}`;
+
+      if (filtered.length === 0) {
+        menuList.classList.add("hidden");
+        emptyState.classList.remove("hidden");
+        return;
+      }
+
+      menuList.classList.remove("hidden");
+      emptyState.classList.add("hidden");
+      const currentOrder = ordersByTable[activeTable] || [];
+
+      menuList.innerHTML = filtered.map(item => {
+        const isAvailable = item.available !== false;
+        const isEdited = !item.isCustom && Number(item.price) !== Number(item.defaultPrice);
+        const totalInOrder = currentOrder.filter(o => o.id === item.id).reduce((sum, o) => sum + o.qty, 0);
+
+        return `
+          <div id="dish-row-${item.id}" class="dish-row px-4 py-3.5 flex items-center justify-between gap-3 ${totalInOrder > 0 ? 'dish-in-order' : ''} ${!isAvailable ? 'opacity-45' : ''}">
+            <div onclick="haptic(8); openDishModal(${item.id})" class="flex-1 min-w-0 cursor-pointer">
+              <div class="flex items-center gap-1.5 mb-1 flex-wrap">
+                <span class="text-[9px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-white/[0.06] text-zinc-500 dark:text-zinc-400">${escapeHTML(item.category)}</span>
+                ${isEdited ? `<span class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-600 dark:text-amber-300">Editado</span>` : ''}
+                ${!isAvailable ? `<span class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-rose-500/15 text-rose-500">Agotado</span>` : ''}
+                <span id="dish-qty-badge-${item.id}" class="${totalInOrder > 0 ? '' : 'hidden'} font-mono text-[10px] font-extrabold px-2 py-0.5 rounded-md bg-rose-600 text-white shadow-xs">x${totalInOrder}</span>
+              </div>
+              <h3 class="text-[15px] font-bold text-zinc-900 dark:text-zinc-100 leading-snug ${!isAvailable ? 'line-through' : ''}">${highlightMatch(item.name, searchQuery)}</h3>
+            </div>
+            <div class="flex items-center gap-2.5 shrink-0">
+              <button onclick="haptic(8); openDishModal(${item.id})" class="spring-press text-right py-1.5 px-2.5 rounded-xl bg-zinc-100/80 dark:bg-white/[0.05] border border-zinc-200/60 dark:border-white/[0.07]">
+                <span class="font-mono text-sm font-extrabold text-zinc-900 dark:text-amber-200 tracking-tight block">${formatPrice(item.price)}</span>
+              </button>
+              <button id="dish-add-btn-${item.id}" onclick="haptic(15); addToOrder(${item.id})" ${!isAvailable ? 'disabled' : ''} class="spring-press dish-add w-10 h-10 rounded-2xl flex items-center justify-center ${
+                !isAvailable
+                  ? 'bg-zinc-100 dark:bg-white/5 text-zinc-400 cursor-not-allowed'
+                  : totalInOrder > 0
+                    ? 'bg-gradient-to-br from-rose-500 to-rose-700 text-white shadow-md shadow-rose-600/30'
+                    : 'bg-zinc-900 dark:bg-white/[0.09] text-white dark:text-zinc-100 border border-transparent dark:border-white/10'
+              }">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function updateSingleDishRowUI(id) {
+      const currentOrder = ordersByTable[activeTable] || [];
+      const totalInOrder = currentOrder.filter(o => o.id === id).reduce((sum, o) => sum + o.qty, 0);
+      const row = document.getElementById(`dish-row-${id}`);
+      const badge = document.getElementById(`dish-qty-badge-${id}`);
+      const btn = document.getElementById(`dish-add-btn-${id}`);
+
+      if (row) row.classList.toggle("dish-in-order", totalInOrder > 0);
+      if (badge) {
+        if (totalInOrder > 0) {
+          badge.textContent = `x${totalInOrder}`;
+          badge.classList.remove("hidden", "pop-anim");
+          void badge.offsetWidth;
+          badge.classList.add("pop-anim");
+        } else {
+          badge.classList.add("hidden");
+        }
+      }
+      if (btn && !btn.disabled) {
+        btn.className = `spring-press dish-add w-10 h-10 rounded-2xl flex items-center justify-center ${
+          totalInOrder > 0
+            ? 'bg-gradient-to-br from-rose-500 to-rose-700 text-white shadow-md shadow-rose-600/30'
+            : 'bg-zinc-900 dark:bg-white/[0.09] text-white dark:text-zinc-100 border border-transparent dark:border-white/10'
+        }`;
+      }
+    }
+
+    function addToOrder(id) {
+      const dish = menuItems.find(item => item.id === id);
+      if (!dish || dish.available === false) return;
+      const currentOrder = ordersByTable[activeTable];
+      const existing = currentOrder.find(item => item.id === id && !item.note);
+      if (existing) existing.qty += 1;
+      else currentOrder.push({ id: dish.id, name: dish.name, price: dish.price, qty: 1, note: "" });
+
+      usageStats[id] = (usageStats[id] || 0) + 1;
+      saveFreqToStorage();
+      saveOrdersToStorage();
+      renderTableSelector();
+      updateOrderUI();
+      updateSingleDishRowUI(id);
+      showToast(`+1 ${dish.name}`);
+    }
+
+    function toggleCustomExtraForm() {
+      const form = document.getElementById("customExtraForm");
+      form.classList.toggle("hidden");
+      if (!form.classList.contains("hidden")) document.getElementById("extraNameInput").focus();
+    }
+
+    function addCustomExtra(name, price) {
+      const currentOrder = ordersByTable[activeTable];
+      const existing = currentOrder.find(item => item.id === null && item.name === name && item.price === price);
+      if (existing) existing.qty += 1;
+      else currentOrder.push({ id: null, name, price: Number(price), qty: 1, note: "" });
+
+      saveOrdersToStorage();
+      renderTableSelector();
+      updateOrderUI();
+      renderOrderDrawerItems();
+      calculateChange();
+      showToast(`+1 ${name}`);
+    }
+
+    function submitCustomExtra() {
+      const name = document.getElementById("extraNameInput").value.trim();
+      const price = parseFloat(document.getElementById("extraPriceInput").value);
+      if (!name || name.length > 100 || !Number.isFinite(price) || price < 0) {
+        showToast("Escribe nombre y monto");
+        return;
+      }
+      addCustomExtra(name, price);
+      document.getElementById("extraNameInput").value = "";
+      document.getElementById("extraPriceInput").value = "";
+      document.getElementById("customExtraForm").classList.add("hidden");
+    }
+
+    function changeOrderItemQty(index, delta) {
+      const currentOrder = ordersByTable[activeTable];
+      if (!currentOrder[index]) return;
+      const itemId = currentOrder[index].id;
+      currentOrder[index].qty += delta;
+      if (currentOrder[index].qty <= 0) currentOrder.splice(index, 1);
+
+      saveOrdersToStorage();
+      renderTableSelector();
+      updateOrderUI();
+      if (itemId) updateSingleDishRowUI(itemId);
+      renderOrderDrawerItems();
+      calculateChange();
+    }
+
+    function resetReleaseConfirmation() {
+      releaseConfirmPending = false;
+      if (releaseConfirmTimer) clearTimeout(releaseConfirmTimer);
+      releaseConfirmTimer = null;
+      const btn = document.getElementById("releaseTableBtn");
+      if (btn) {
+        btn.textContent = "Cobrar y Liberar";
+        btn.className = "spring-press bg-gradient-to-r from-rose-600 to-rose-700 text-white font-extrabold px-4 py-3 rounded-2xl text-xs shadow-lg shadow-rose-600/25";
+      }
+    }
+
+    function confirmReleaseTable() {
+      const btn = document.getElementById("releaseTableBtn");
+      const total = getActiveOrderTotal();
+      if (total <= 0) {
+        showToast("Cuenta sin pedidos");
+        return;
+      }
+      if (!releaseConfirmPending) {
+        releaseConfirmPending = true;
+        btn.textContent = "¿Confirmar cobro?";
+        btn.className = "spring-press bg-emerald-600 text-white font-extrabold px-4 py-3 rounded-2xl text-xs shadow-lg shadow-emerald-600/25";
+        if (releaseConfirmTimer) clearTimeout(releaseConfirmTimer);
+        releaseConfirmTimer = setTimeout(resetReleaseConfirmation, 4000);
+        return;
+      }
+      const paidInput = document.getElementById("cashPaidInput").value.trim();
+      const paid = paidInput === "" ? total : Number(paidInput);
+      if (!Number.isFinite(paid) || paid < total) {
+        resetReleaseConfirmation();
+        showToast("Monto recibido menor al total");
+        return;
+      }
+      ordersByTable[activeTable] = [];
+      document.getElementById("cashPaidInput").value = "";
+      resetReleaseConfirmation();
+      saveOrdersToStorage();
+      renderTableSelector();
+      updateOrderUI();
+      renderMenu();
+      renderOrderDrawerItems();
+      calculateChange();
+      showToast(`Cobrado: ${formatPrice(total)} • Vuelto: ${formatPrice(roundMoney(paid - total))}`);
+      switchTab("mesas");
+    }
+
+    function getActiveOrderTotal() {
+      return roundMoney((ordersByTable[activeTable] || []).reduce((sum, item) => sum + (item.price * item.qty), 0));
+    }
+
+    function updateOrderUI() {
+      const orderBar = document.getElementById("orderBar");
+      const currentOrder = ordersByTable[activeTable] || [];
+      const totalQty = currentOrder.reduce((sum, item) => sum + item.qty, 0);
+      const totalPrice = getActiveOrderTotal();
+      const tableObj = TABLES.find(t => t.id === activeTable);
+      const tableName = tableObj ? tableObj.label : "Mesa";
+
+      document.getElementById("headerActiveTable").textContent = tableName;
+      document.getElementById("activeTableLabel").textContent = tableName;
+      document.getElementById("drawerTableTitle").textContent = tableName;
+      document.getElementById("orderCountBadge").textContent = totalQty;
+      document.getElementById("orderTotalText").textContent = formatPrice(totalPrice);
+      document.getElementById("drawerTotalText").textContent = formatPrice(totalPrice);
+
+      const navBadge = document.getElementById("navCuentaBadge");
+      if (totalQty > 0) {
+        navBadge.textContent = totalQty;
+        navBadge.classList.remove("hidden");
+      } else {
+        navBadge.classList.add("hidden");
+      }
+
+      if (totalQty > 0 && activeTab !== "cuenta") {
+        orderBar.classList.remove("translate-y-24", "opacity-0");
+      } else {
+        orderBar.classList.add("translate-y-24", "opacity-0");
+      }
+    }
+
+    function renderOrderDrawerItems() {
+      const list = document.getElementById("orderItemsList");
+      const currentOrder = ordersByTable[activeTable] || [];
+      if (currentOrder.length === 0) {
+        list.innerHTML = `
+          <div class="text-center py-10 px-4">
+            <p class="text-zinc-400 text-xs mb-3">Aún no hay platos registrados en esta mesa.</p>
+            <button type="button" onclick="haptic(10); switchTab('carta')" class="spring-press px-4 py-2.5 rounded-2xl bg-rose-600 text-white text-xs font-extrabold">Abrir Carta</button>
+          </div>
+        `;
+        return;
+      }
+      list.innerHTML = currentOrder.map((item, idx) => `
+        <div class="bg-zinc-50 dark:bg-black/40 rounded-2xl p-3.5 border border-zinc-200/70 dark:border-white/[0.07]">
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex-1 min-w-0">
+              <div class="text-sm font-bold text-zinc-900 dark:text-white truncate">${escapeHTML(item.name)}</div>
+              <div class="font-mono text-xs text-zinc-500 mt-0.5">${formatPrice(item.price)} c/u &bull; <strong class="text-zinc-900 dark:text-amber-300">${formatPrice(item.price * item.qty)}</strong></div>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+              <button onclick="haptic(8); openNoteModal(${idx})" class="spring-press h-8 px-2.5 rounded-xl border text-[11px] font-bold flex items-center gap-1 ${item.note ? 'bg-amber-500/20 border-amber-500/40 text-amber-700 dark:text-amber-300' : 'bg-white dark:bg-[#18181f] border-zinc-200 dark:border-white/10 text-zinc-500'}">Nota</button>
+              <button onclick="haptic(10); changeOrderItemQty(${idx}, -1)" class="spring-press w-8 h-8 rounded-xl bg-white dark:bg-[#18181f] border border-zinc-200 dark:border-white/10 font-bold">-</button>
+              <span class="font-mono w-5 text-center font-extrabold text-xs">${item.qty}</span>
+              <button onclick="haptic(12); changeOrderItemQty(${idx}, 1)" class="spring-press w-8 h-8 rounded-xl bg-rose-600 text-white font-bold">+</button>
+            </div>
+          </div>
+          ${item.note ? `<div onclick="openNoteModal(${idx})" class="mt-2 pt-2 border-t border-dashed border-zinc-200 dark:border-white/10 text-[11px] font-semibold text-amber-600 dark:text-amber-300 cursor-pointer">Nota: ${escapeHTML(item.note)}</div>` : ''}
+        </div>
+      `).join("");
+    }
+
+    function openNoteModal(orderIndex) {
+      const item = ordersByTable[activeTable][orderIndex];
+      if (!item) return;
+      document.getElementById("noteOrderIndex").value = orderIndex;
+      document.getElementById("noteDishTitle").textContent = `${item.qty}x ${item.name}`;
+      document.getElementById("noteTextInput").value = item.note || "";
+      document.getElementById("noteModal").classList.remove("hidden");
+    }
+
+    function closeNoteModal() { document.getElementById("noteModal").classList.add("hidden"); }
+
+    function toggleQuickNoteChip(phrase) {
+      const input = document.getElementById("noteTextInput");
+      let parts = input.value.trim() ? input.value.split(",").map(p => p.trim()) : [];
+      const idx = parts.findIndex(p => p.toLowerCase() === phrase.toLowerCase());
+      if (idx !== -1) parts.splice(idx, 1);
+      else parts.push(phrase);
+      input.value = parts.join(", ");
+    }
+
+    function clearNoteInput() { document.getElementById("noteTextInput").value = ""; }
+
+    function saveItemNote() {
+      const idx = Number(document.getElementById("noteOrderIndex").value);
+      const noteText = document.getElementById("noteTextInput").value.trim();
+      if (ordersByTable[activeTable][idx]) {
+        ordersByTable[activeTable][idx].note = noteText;
+        saveOrdersToStorage();
+        renderOrderDrawerItems();
+      }
+      closeNoteModal();
+      showToast("Nota guardada");
+    }
+
+    function setQuickCash(amount) {
+      document.getElementById("cashPaidInput").value = amount;
+      calculateChange();
+    }
+
+    function calculateChange() {
+      const total = getActiveOrderTotal();
+      const paid = parseFloat(document.getElementById("cashPaidInput").value);
+      const changeEl = document.getElementById("changeDueText");
+      if (isNaN(paid) || paid <= 0) {
+        changeEl.textContent = "S/ 0.00";
+        changeEl.className = "font-mono text-lg font-extrabold text-zinc-400";
+        return;
+      }
+      const diff = roundMoney(paid - total);
+      if (diff < 0) {
+        changeEl.textContent = `Falta ${formatPrice(Math.abs(diff))}`;
+        changeEl.className = "font-mono text-sm font-extrabold text-rose-500";
+      } else {
+        changeEl.textContent = formatPrice(diff);
+        changeEl.className = "font-mono text-lg font-extrabold text-emerald-600 dark:text-emerald-400";
+      }
+    }
+
+    function copyOrderSummary() {
+      const currentOrder = ordersByTable[activeTable] || [];
+      if (currentOrder.length === 0) {
+        showToast("No hay pedido para copiar");
+        return;
+      }
+      const tableObj = TABLES.find(t => t.id === activeTable);
+      const lines = [
+        `*CHIFA KATZUMY - ${tableObj.label.toUpperCase()}*`,
+        ...currentOrder.map(i => `${i.qty}x ${i.name}${i.note ? ` [${i.note}]` : ""} - ${formatPrice(i.price * i.qty)}`),
+        `*TOTAL: ${formatPrice(getActiveOrderTotal())}*`
+      ];
+      const ta = document.createElement("textarea");
+      ta.value = lines.join("\n");
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand("copy"); showToast("Comanda copiada"); } catch (e) {}
+      document.body.removeChild(ta);
+    }
+
+    let currentEditingDefaultPrice = null;
+
+    function openDishModal(id = null) {
+      const modal = document.getElementById("dishModal");
+      const title = document.getElementById("modalTitle");
+      const idInput = document.getElementById("editDishId");
+      const nameInput = document.getElementById("dishNameInput");
+      const catInput = document.getElementById("dishCategoryInput");
+      const priceInput = document.getElementById("dishPriceInput");
+      const availInput = document.getElementById("dishAvailableInput");
+      const deleteBtn = document.getElementById("deleteDishBtn");
+      const editedBadge = document.getElementById("editedBadgeModal");
+      const restoreBtn = document.getElementById("restoreDefaultPriceBtn");
+
+      if (id) {
+        const dish = menuItems.find(item => item.id === id);
+        if (!dish) return;
+        title.textContent = "Editar Plato";
+        idInput.value = dish.id;
+        nameInput.value = dish.name;
+        catInput.value = dish.category;
+        priceInput.value = dish.price;
+        availInput.checked = dish.available !== false;
+        deleteBtn.classList.toggle("hidden", !dish.isCustom);
+        currentEditingDefaultPrice = dish.defaultPrice;
+        if (!dish.isCustom && Number(dish.price) !== Number(dish.defaultPrice)) {
+          editedBadge.classList.remove("hidden");
+          restoreBtn.textContent = `Volver a S/ ${Number(dish.defaultPrice).toFixed(2)}`;
+          restoreBtn.classList.remove("hidden");
+        } else {
+          editedBadge.classList.add("hidden");
+          restoreBtn.classList.add("hidden");
+        }
+      } else {
+        title.textContent = "Agregar Plato";
+        idInput.value = "";
+        nameInput.value = "";
+        catInput.value = selectedCategory !== "Todos" ? selectedCategory : "Entradas";
+        priceInput.value = "";
+        availInput.checked = true;
+        deleteBtn.classList.add("hidden");
+        editedBadge.classList.add("hidden");
+        restoreBtn.classList.add("hidden");
+        currentEditingDefaultPrice = null;
+      }
+      modal.classList.remove("hidden");
+    }
+
+    function closeDishModal() { document.getElementById("dishModal").classList.add("hidden"); }
+
+    function adjustModalPrice(delta) {
+      const input = document.getElementById("dishPriceInput");
+      const current = parseFloat(input.value) || 0;
+      input.value = Math.max(0, Math.round((current + delta) * 100) / 100);
+    }
+
+    function restoreSingleDishPrice() {
+      if (currentEditingDefaultPrice !== null) {
+        document.getElementById("dishPriceInput").value = currentEditingDefaultPrice;
+        document.getElementById("restoreDefaultPriceBtn").classList.add("hidden");
+        document.getElementById("editedBadgeModal").classList.add("hidden");
+      }
+    }
+
+    function saveDish(e) {
+      e.preventDefault();
+      const idVal = document.getElementById("editDishId").value;
+      const nameVal = document.getElementById("dishNameInput").value.trim();
+      const catVal = document.getElementById("dishCategoryInput").value;
+      const priceVal = parseFloat(document.getElementById("dishPriceInput").value);
+      const availVal = document.getElementById("dishAvailableInput").checked;
+
+      if (!nameVal || nameVal.length > 100 || !Number.isFinite(priceVal) || priceVal < 0) {
+        showToast("Revisa nombre y precio");
+        return;
+      }
+
+      if (idVal) {
+        const numId = Number(idVal);
+        const index = menuItems.findIndex(item => item.id === numId);
+        if (index !== -1) {
+          menuItems[index] = { ...menuItems[index], name: nameVal, category: catVal, price: priceVal, available: availVal };
+          Object.values(ordersByTable).forEach(order => {
+            order.forEach(row => {
+              if (row.id === numId) {
+                row.name = nameVal;
+                row.price = priceVal;
+              }
+            });
+          });
+          saveOrdersToStorage();
+          renderTableSelector();
+          updateOrderUI();
+          if (activeTab === "cuenta") {
+            renderOrderDrawerItems();
+            calculateChange();
+          }
+          showToast("Plato actualizado");
+        }
+      } else {
+        const usedIds = new Set(menuItems.map(item => Number(item.id)));
+        let newId = 1000;
+        while (usedIds.has(newId)) newId++;
+        menuItems.unshift({
+          id: newId,
+          name: nameVal,
+          category: catVal,
+          price: priceVal,
+          available: availVal,
+          defaultPrice: priceVal,
+          defaultName: nameVal,
+          defaultCategory: catVal,
+          isCustom: true
+        });
+        showToast("Plato agregado");
+      }
+      saveMenuToStorage();
+      renderFrequentChips();
+      renderMenu();
+      closeDishModal();
+    }
+
+    function deleteCurrentDish() {
+      const idVal = Number(document.getElementById("editDishId").value);
+      if (!idVal) return;
+      const target = menuItems.find(item => item.id === idVal);
+      if (!target || !target.isCustom) {
+        showToast("Plato de la carta: márcalo como agotado");
+        return;
+      }
+      const inUse = Object.values(ordersByTable).some(order => order.some(item => item.id === idVal));
+      if (inUse) {
+        showToast("No se puede eliminar: está en comanda");
+        return;
+      }
+      menuItems = menuItems.filter(item => item.id !== idVal);
+      saveMenuToStorage();
+      renderFrequentChips();
+      renderMenu();
+      closeDishModal();
+      showToast("Plato eliminado");
+    }
+
+    function openBackupModal() {
+      resetAllConfirmPending = false;
+      const payload = {
+        app: "ChifaKatzumy",
+        backupVersion: 4,
+        createdAt: new Date().toISOString(),
+        items: menuItems.filter(i =>
+          i.isCustom ||
+          i.price !== i.defaultPrice ||
+          i.name !== i.defaultName ||
+          i.category !== i.defaultCategory ||
+          i.available === false
+        ).map(({ id, name, category, price, available, isCustom }) => ({ id, name, category, price, available, isCustom })),
+        ordersByTable,
+        usageStats
+      };
+      document.getElementById("backupTextarea").value = JSON.stringify(payload);
+      document.getElementById("backupModal").classList.remove("hidden");
+    }
+
+    function closeBackupModal() { document.getElementById("backupModal").classList.add("hidden"); }
+
+    function copyBackupData() {
+      const ta = document.getElementById("backupTextarea");
+      ta.select();
+      try {
+        const copied = document.execCommand("copy");
+        showToast(copied ? "Respaldo copiado" : "No se pudo copiar");
+      } catch (e) { showToast("No se pudo copiar"); }
+    }
+
+    function downloadBackupData() {
+      try {
+        const data = document.getElementById("backupTextarea").value;
+        const blob = new Blob([data], { type: "application/json;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `chifa-katzumy-respaldo-${new Date().toISOString().slice(0, 10)}.json`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+        showToast("Respaldo descargado");
+      } catch (e) { showToast("No se pudo descargar"); }
+    }
+
+    function importBackupData() {
+      try {
+        const raw = document.getElementById("backupTextarea").value.trim();
+        if (!raw || raw.length > 2_000_000) throw new Error("Respaldo demasiado grande");
+        const parsed = JSON.parse(raw);
+        const list = Array.isArray(parsed) ? parsed : parsed.items;
+        if (!Array.isArray(list) || list.length > 1000) throw new Error("Menú inválido");
+        const ids = new Set();
+        const validItems = list.every(item => {
+          const id = Number(item && item.id);
+          const valid = item && Number.isSafeInteger(id) && id > 0 && !ids.has(id) &&
+            typeof item.name === "string" && item.name.trim().length > 0 && item.name.length <= 100 &&
+            Number.isFinite(Number(item.price)) && Number(item.price) >= 0 && Number(item.price) <= 100000;
+          if (valid) ids.add(id);
+          return valid;
+        });
+        if (!validItems) throw new Error("Platos inválidos");
+
+        let restoredOrders = null;
+        if (!Array.isArray(parsed) && parsed.ordersByTable !== undefined) {
+          if (!parsed.ordersByTable || typeof parsed.ordersByTable !== "object" || Array.isArray(parsed.ordersByTable))
+            throw new Error("Comandas inválidas");
+          restoredOrders = normalizeOrdersData(parsed.ordersByTable);
+        }
+
+        menuItems = buildMergedMenu(list);
+        if (restoredOrders) ordersByTable = restoredOrders;
+        if (!Array.isArray(parsed) && parsed.usageStats && typeof parsed.usageStats === "object" && !Array.isArray(parsed.usageStats)) {
+          usageStats = Object.fromEntries(Object.entries(parsed.usageStats)
+            .filter(([key, value]) => /^\d+$/.test(key) && Number.isFinite(Number(value)) && Number(value) >= 0)
+            .map(([key, value]) => [key, Math.min(1000000, Number(value))]));
+          saveFreqToStorage();
+        }
+        saveMenuToStorage();
+        saveOrdersToStorage();
+        renderTableSelector();
+        renderFrequentChips();
+        renderMenu();
+        updateOrderUI();
+        if (activeTab === "cuenta") renderOrderDrawerItems();
+        closeBackupModal();
+        showToast("Respaldo cargado");
+      } catch (e) {
+        showToast("Respaldo inválido");
+      }
+    }
+
+    function confirmResetAllMenu() {
+      if (!resetAllConfirmPending) {
+        resetAllConfirmPending = true;
+        showToast("Toca de nuevo para confirmar");
+        return;
+      }
+      resetAllConfirmPending = false;
+      menuItems = buildMergedMenu(null);
+      saveMenuToStorage();
+      renderFrequentChips();
+      renderMenu();
+      closeBackupModal();
+      showToast("Menú base restaurado");
+    }
+
+    let toastTimeout;
+    function showToast(msg) {
+      const toast = document.getElementById("toast");
+      toast.textContent = msg;
+      toast.classList.remove("opacity-0");
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => toast.classList.add("opacity-0"), 1600);
+    }
+
+    ["noteModal", "dishModal", "backupModal", "mergeConfirmModal"].forEach(id => {
+      const layer = document.getElementById(id);
+      layer.addEventListener("click", event => {
+        if (event.target === layer) layer.classList.add("hidden");
+      });
+    });
+
+    window.addEventListener("DOMContentLoaded", initApp);
+  </script>
+</body>
+</html>
